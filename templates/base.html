@@ -1,0 +1,19 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}pysocial{% endblock %}</title>
+    </head>
+    <body>
+        <nav>
+            {% if session.username %}
+                <a href="{{ url_for('main.feed') }}">Feed</a>
+                <a href="{{ url_for('auth.logout') }}">Log out</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}">Log in</a>
+                <a href="{{ url_for('auth.register') }}">Register</a>
+            {% endif %}
+        </nav>
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>
