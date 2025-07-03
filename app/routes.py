@@ -1,6 +1,16 @@
-from flask import Blueprint, render_template, request, redirect, session, url_for
+from flask import flash, Blueprint, render_template, request, abort, redirect, session, url_for
 from .models import Post, User, PostVote
 from . import db
+from config import Config
+import os
+from werkzeug.utils import secure_filename
+
+ALLOWED_EXTS = {'png', 'jpg', 'jpeg', 'gif'}
+MAX_CONTENT_LENGTH = 2 * 1024 * 1024 # two megs of bytes
+
+def allowed_file(filename):
+    return '.' in filename and \
+        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTS
 
 main = Blueprint('main', __name__)
 
@@ -10,7 +20,7 @@ def feed():
         return redirect(url_for('auth.login'))
     
     posts = Post.query.order_by(Post.id.desc()).all()
-    return render_template('feed.html', posts=posts)
+    return render_template('feed.html', posts=posts, user_id=session.get('user_id'))
 
 @main.route('/post', methods=['POST'])
 def post():
@@ -75,4 +85,19 @@ def dislike(post_id):
         db.session.add(vote)
     
     db.session.commit()
+    return redirect(request.referrer or url_for('main.feed'))
+
+@main.route('/delete_post/<int:post_id>', methods=['POST'])
+def delete_post(post_id):
+    if 'user_id' not in session:
+        abort(403)
+    
+    post = Post.query.get_or_404(post_id)
+
+    if post.user_id != session['user_id']:
+        abort(403)
+    
+    db.session.delete(post)
+    db.session.commit()
+    flash("Post deleted :(", "success")
     return redirect(request.referrer or url_for('main.feed'))

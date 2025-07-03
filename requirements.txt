@@ -1,3 +1,5 @@
 flask
 Flask_SQLAlchemy
+flask_wtf
 werkzeug
+flask_login

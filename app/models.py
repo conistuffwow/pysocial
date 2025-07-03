@@ -1,4 +1,5 @@
 from . import db
+from werkzeug.utils import secure_filename
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -14,6 +15,7 @@ class Post(db.Model):
     dislikes = db.Column(db.Integer, default=0)
 
     user = db.relationship('User', backref='posts')
+    votes = db.relationship('PostVote', backref='post', cascade="all, delete-orphan")
 
 
 class PostVote(db.Model):
@@ -23,7 +25,6 @@ class PostVote(db.Model):
     vote = db.Column(db.String(10))
 
     user = db.relationship('User', backref='post_votes')
-    post = db.relationship('Post', backref='votes')
 
     __table_args__ = (
         db.UniqueConstraint('user_id', 'post_id', name='onevote'),

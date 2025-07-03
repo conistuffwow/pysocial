@@ -15,6 +15,11 @@
             <form action="{{ url_for('main.dislike', post_id=post.id) }}" method="post" style="display:inline;">
                 <button type="submit">dislike {{ post.dislikes }}</button>
             </form>
+            {% if post.user_id == user_id %}
+                <form action="{{ url_for('main.delete_post', post_id=post.id) }}" method="post">
+                    <button type="submit">Delete</button>
+                </form>
+            {% endif %}
         
     {% else %}
         <li>{{ user.username }} hasn't posted anything yet... </li>

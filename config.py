@@ -1,6 +1,7 @@
 import os
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'pictures', 'user')
 
 class Config:
     SECRET_KEY = 'REPLACE THIS PLEASE'
