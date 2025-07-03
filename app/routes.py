@@ -101,3 +101,18 @@ def delete_post(post_id):
     db.session.commit()
     flash("Post deleted :(", "success")
     return redirect(request.referrer or url_for('main.feed'))
+
+@main.route('/editbio', methods=['GET', 'POST'])
+def editbio():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('auth.login'))
+    
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        user.bio = request.form['bio']
+        db.session.commit()
+        return redirect(url_for('main.profile', username=user.username))
+    
+    return render_template('editbio.html', user=user)

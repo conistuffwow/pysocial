@@ -4,6 +4,10 @@
 
 {% block content %}
 <h2>Profile: {{ user.username }}</h2>
+<p><strong>About me:</strong> {{ user.bio or "No bio yet." }}</p>
+{% if session.username == user.username %}
+    <a href="{{ url_for('main.editbio') }}">Edit bio</a>
+{% endif %}
 
 <h3>Posts</h3>
 <ul>
