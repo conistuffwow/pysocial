@@ -3,10 +3,19 @@
 {% block title %}Profile - {{ user.username }}{% endblock %}
 
 {% block content %}
+
+{% if user.pfp %}
+    <img src="{{ url_for('static', filename='uploads/' + user.pfp) }}" width="150" height="150" style="object-fit: cover; border-radius: 50%;">
+{% else %}
+    <img src="../static/pfps/default.jpg" width="150" height="150" style="object-fit: cover; border-radius: 50%;">
+{% endif %}
 <h2>Profile: {{ user.username }}</h2>
 <p><strong>About me:</strong> {{ user.bio or "No bio yet." }}</p>
 {% if session.username == user.username %}
     <a href="{{ url_for('main.editbio') }}">Edit bio</a>
+{% endif %}
+{% if session.username == user.username %}
+  <a href="{{ url_for('main.uploadpfp') }}">Change Profile Picture</a>
 {% endif %}
 
 <h3>Posts</h3>

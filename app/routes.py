@@ -1,16 +1,13 @@
-from flask import flash, Blueprint, render_template, request, abort, redirect, session, url_for
+from flask import current_app, flash, Blueprint, render_template, request, abort, redirect, session, url_for
 from .models import Post, User, PostVote
 from . import db
 from config import Config
 import os
 from werkzeug.utils import secure_filename
 
-ALLOWED_EXTS = {'png', 'jpg', 'jpeg', 'gif'}
-MAX_CONTENT_LENGTH = 2 * 1024 * 1024 # two megs of bytes
 
 def allowed_file(filename):
-    return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 main = Blueprint('main', __name__)
 
@@ -116,3 +113,29 @@ def editbio():
         return redirect(url_for('main.profile', username=user.username))
     
     return render_template('editbio.html', user=user)
+
+@main.route('/uploadpfp', methods=['GET', 'POST'])
+def uploadpfp():
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('auth.login'))
+    
+    user = User.query.get_or_404(user_id)
+
+    if request.method == 'POST':
+        file = request.files.get('pfp')
+        if file and allowed_file(file.filename):
+            upload_folder = os.path.join(current_app.static_folder, 'uploads')
+            os.makedirs(upload_folder, exist_ok=True)
+            filename = secure_filename(f"user_{user.id}_{file.filename}")
+            filepath = os.path.join(upload_folder, filename)
+            file.save(filepath)
+            print(f"Saved to: {filepath}")
+            print(f"Assigned to user: {filename}")
+            user.pfp = filename
+            db.session.commit()
+            return redirect(url_for('main.profile', username=user.username))
+        else:
+            return "Invalid file", 400
+        
+    return render_template('uploadpfp.html', user=user)

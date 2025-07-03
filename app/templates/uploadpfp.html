@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Upload PFP{% endblock %}
+
+{% block content %}
+<h2>Upload pfp</h2>
+<form method="POST" enctype="multipart/form-data">
+    <input type="file" name="pfp" accept="image/*"><br>
+    <button type="submit">Upload</button>
+</form>
+<a href="{{ url_for('main.profile', username=user.username) }}">Cancel</a>
+
+{% endblock %}

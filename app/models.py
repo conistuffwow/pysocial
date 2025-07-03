@@ -6,6 +6,7 @@ class User(db.Model):
     username = db.Column(db.String(30), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     bio = db.Column(db.Text, default="")
+    pfp = db.Column(db.String(120), default=None)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
