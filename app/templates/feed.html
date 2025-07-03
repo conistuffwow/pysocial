@@ -23,6 +23,23 @@
       <strong style="margin-left: 10px;">
         <a href="{{ url_for('main.profile', username=post.user.username) }}">{{ post.user.username }}</a>
       </strong>: {{ post.content }}
+      <li>
+        <form action="{{ url_for('main.like', post_id=post.id) }}" method="post" style="display:inline;">
+            <button type="submit"><i class="fa-solid fa-thumbs-up"></i> {{ post.likes }}</button>
+        </form>
+        <form action="{{ url_for('main.dislike', post_id=post.id) }}" method="post" style="display:inline;">
+            <button type="submit"><i class="fa-solid fa-thumbs-down"></i> {{ post.dislikes }}</button>
+        </form>
+        {% if post.user_id == user_id %}
+        <form action="{{ url_for('main.delete_post', post_id=post.id) }}" method="post">
+            <button type="submit">Delete</button>
+        </form>
+        {% endif %}
+        <a href="{{ url_for('main.viewpost', post_id=post.id) }}">
+          {{ post.comments|length }} comments
+        </a>
+      </li>
+      <br>
     </li>
   {% endfor %}
 </ul>

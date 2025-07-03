@@ -1,5 +1,6 @@
 from . import db
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -7,6 +8,7 @@ class User(db.Model):
     password = db.Column(db.String(128), nullable=False)
     bio = db.Column(db.Text, default="")
     pfp = db.Column(db.String(120), default=None)
+    is_banned = db.Column(db.Boolean, default=False)
 
 class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -31,3 +33,14 @@ class PostVote(db.Model):
     __table_args__ = (
         db.UniqueConstraint('user_id', 'post_id', name='onevote'),
     )
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+
+    user = db.relationship('User', backref='comments')
+    post = db.relationship('Post', backref='comments')

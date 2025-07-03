@@ -1,5 +1,5 @@
 from flask import current_app, flash, Blueprint, render_template, request, abort, redirect, session, url_for
-from .models import Post, User, PostVote
+from .models import Post, User, PostVote, Comment
 from . import db
 from config import Config
 import os
@@ -139,3 +139,38 @@ def uploadpfp():
             return "Invalid file", 400
         
     return render_template('uploadpfp.html', user=user)
+
+@main.route('/post/<int:post_id>')
+def viewpost(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('viewpost.html', post=post)
+
+@main.route('/comment/<int:post_id>', methods=['POST'])
+def comment(post_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return redirect(url_for('auth.login'))
+    
+    content = request.form['content']
+    if content.strip():
+        comment = Comment(content=content, user_id=user_id, post_id=post_id)
+        db.session.add(comment)
+        db.session.commit()
+    return redirect(url_for('main.viewpost', post_id=post_id))
+
+@main.route('/admin')
+def adminpanel():
+    if session.get('username') != "admin":
+        return "Access Denied", 403
+    users = User.query.filter(User.username != "admin").all()
+    return render_template('admin.html', users=users)
+
+@main.route('/ban/<int:user_id>', methods=['POST'])
+def banuser(user_id):
+    if session.get('username') != "admin":
+        return "Access Denied", 403
+    
+    user = User.query.get_or_404(user_id)
+    user.is_banned = True
+    db.session.commit()
+    return redirect(url_for('main.adminpanel'))

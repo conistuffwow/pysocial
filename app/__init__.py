@@ -16,6 +16,7 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+    
 
     from .routes import main
     from .auth import auth

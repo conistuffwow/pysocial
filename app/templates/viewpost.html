@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Post by {{ post.user.username }}{% endblock %}
+{% block content %}
+
+<a href="{{ url_for('main.feed') }}">Back to feed</a>
+<h2>{{ post.user.username }}</h2>
+<p>{{ post.content }}</p>
+
+<hr>
+
+<h3>comments</h3>
+<form method="POST" action="{{ url_for('main.comment', post_id=post.id) }}">
+    <input name="content" placeholder="add a comment..." required>
+    <button type="submit">post comment!</button>
+</form>
+<br>
+<ul>
+  {% for comment in post.comments %}
+    <li style="display: flex; align-items: center; margin-bottom: 1rem;">
+      <img src="{{
+        url_for('static', filename=(
+          'uploads/' ~ comment.user.pfp if comment.user.pfp else 'pfps/default.jpg'
+        ))
+      }}"
+      alt="pfp"
+      width="32"
+      height="32"
+      style="border-radius: 50%; margin-right: 0.5rem; object-fit: cover;">
+
+      <div>
+        <strong>{{ comment.user.username }}</strong><br>
+        {{ comment.content }}
+      </div>
+    </li>
+  {% else %}
+    <li>No comments yet.</li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

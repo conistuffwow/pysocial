@@ -25,6 +25,8 @@ def login():
     if request.method == 'POST':
         user = User.query.filter_by(username=request.form['username']).first()
         if user and check_password_hash(user.password, request.form['password']):
+            if user.is_banned:
+                return "Account Terminated. your actions on this site have warranted a ban. You are no longer permitted to use this site."
             session['user_id'] = user.id
             session['username'] = user.username
             return redirect(url_for('main.feed'))
