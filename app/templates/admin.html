@@ -4,6 +4,7 @@
 <h1>Admin panel</h1>
 <p>Welcome, admin!</p>
 
+<h2>User actions</h2>
 <table>
     <tr>
         <th>username</th>
@@ -26,4 +27,15 @@
     </tr>
     {% endfor %}
 </table>
+
+<h2>Set site theme</h2>
+<form action="{{ url_for('main.settheme') }}" method="POST">
+    <select name="theme">
+        {% for file in theme_files %}
+            <option value="{{ file }}" {% if file == config_theme %}selected{% endif %}>{{ file }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Apply</button>
+</form>
+
 {% endblock %}

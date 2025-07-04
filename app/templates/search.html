@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h1>Search Results for "{{ query }}"</h1>
+
+  {% if users %}
+    <h2>Users</h2>
+    <ul>
+      {% for user in users %}
+        <li>
+          <a href="{{ url_for('main.profile', username=user.username) }}">
+            <img src="{{ url_for('static', filename=(('uploads/' ~ user.pfp) if user.pfp else 'pfps/default.jpg')) }}"
+                 alt="pfp" width="24" height="24" style="border-radius: 50%; object-fit: cover;">
+            {{ user.username }}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if posts %}
+    <h2>Posts</h2>
+    <ul>
+      {% for post in posts %}
+        <li>
+          <a href="{{ url_for('main.viewpost', post_id=post.id) }}">
+            {{ post.content[:100] }}...
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% if not users and not posts and query %}
+    <p>No results found.</p>
+  {% endif %}
+{% endblock %}

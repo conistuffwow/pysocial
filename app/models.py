@@ -44,3 +44,24 @@ class Comment(db.Model):
 
     user = db.relationship('User', backref='comments')
     post = db.relationship('Post', backref='comments')
+
+class SiteConfig(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    key = db.Column(db.String(50), unique=True, nullable=False)
+    value = db.Column(db.String(200), nullable=False)
+
+    @staticmethod
+    def get(key, default=None):
+        setting = SiteConfig.query.filter_by(key=key).first()
+        return setting.value if setting else default
+    @staticmethod
+    def set(key, value):
+        setting = SiteConfig.query.filter_by(key=key).first()
+        if setting:
+            setting.value = value
+        else:
+            setting = SiteConfig(key=key, value=value)
+            db.session.add(setting)
+        db.session.commit()
+
+    

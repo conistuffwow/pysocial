@@ -12,18 +12,25 @@ def allowed_file(filename):
         filename.rsplit('.', 1)[1].lower() in Config.ALLOWED_EXTS
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static')
     app.config.from_object(Config)
 
     db.init_app(app)
-    
+
 
     from .routes import main
     from .auth import auth
     app.register_blueprint(main)
     app.register_blueprint(auth)
 
+    @app.context_processor
+    def inject_theme():
+        from .models import SiteConfig
+        theme = SiteConfig.get('theme', 'themes/base.css')
+        return {'config_theme': theme}
+
     with app.app_context():
         db.create_all()
     
     return app
+
