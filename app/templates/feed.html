@@ -40,7 +40,7 @@
         </form>
         {% endif %}
         <a href="{{ url_for('main.viewpost', post_id=post.id) }}">
-          {{ post.comments|length }} comments
+          {{ post.comments|length }} comments {{ encryption }}
         </a>
       </li>
       <br>
