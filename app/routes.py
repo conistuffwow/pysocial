@@ -25,7 +25,7 @@ def feed():
         return redirect(url_for('auth.login'))
     
     posts = Post.query.order_by(Post.id.desc()).all()
-    return render_template('feed.html', posts=posts, has_new_comments=has_new_comments, user_id=session.get('user_id'))
+    return render_template('feed.html', posts=posts, has_new_comments=has_new_comments, user_id=session.get('user_id'), encryption=current_app.config['SECRET_KEY'])
 
 @main.route('/post', methods=['POST'])
 def post():
