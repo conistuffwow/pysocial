@@ -2,13 +2,38 @@ from flask import Blueprint, request, redirect, render_template, session, url_fo
 from .models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 from . import db
+import re
+
+def sanitize_text(text):
+    invisible_chars = [
+        '\u200B',  # Zero-width space
+        '\u200C',  # Zero-width non-joiner
+        '\u200D',  # Zero-width joiner
+        '\u00A0',  # Non-breaking space
+        '\u200E',  # Left-to-right mark
+        '\u200F',  # Right-to-left mark
+        '\uFEFF',  # Zero-width no-break space (Byte Order Mark)
+    ]
+    
+
+    for ch in invisible_chars:
+        text = text.replace(ch, '')
+
+
+    text = re.sub(r'\s+', '', text)
+    text.replace("‎", "")
+
+    text = re.sub(r'[\u0400-\u04FF]', '', text)
+
+    return text
+
 
 auth = Blueprint('auth', __name__)
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
+        username = sanitize_text(request.form['username'])
         password = generate_password_hash(request.form['password'])
 
         if User.query.filter_by(username=username).first():
