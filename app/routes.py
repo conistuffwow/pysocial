@@ -1,13 +1,21 @@
 from flask import current_app, flash, Blueprint, render_template, request, abort, redirect, session, url_for
-from .models import Post, User, PostVote, Comment, SiteConfig
+from .models import Post, User, PostVote, Comment, SiteConfig, PostView
 from . import db
 from config import Config
 import os
 from werkzeug.utils import secure_filename
+from datetime import datetime
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+
+def has_new_comments(post, user_id):
+    post_view = PostView.query.filter_by(user_id=user_id, post_id=post.id).first()
+    if not post_view:
+        return len(post.comments) > 0 
+    return any(c.created_at > post_view.last_viewed for c in post.comments)
+
 
 main = Blueprint('main', __name__)
 
@@ -17,7 +25,7 @@ def feed():
         return redirect(url_for('auth.login'))
     
     posts = Post.query.order_by(Post.id.desc()).all()
-    return render_template('feed.html', posts=posts, user_id=session.get('user_id'))
+    return render_template('feed.html', posts=posts, has_new_comments=has_new_comments, user_id=session.get('user_id'))
 
 @main.route('/post', methods=['POST'])
 def post():
@@ -30,7 +38,7 @@ def post():
 @main.route('/user/<username>')
 def profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('profile.html', user=user)
+    return render_template('profile.html', user=user, has_new_comments=has_new_comments, user_id=session.get('user_id'))
 
 @main.route('/like/<int:post_id>', methods=['POST'])
 def like(post_id):
@@ -41,6 +49,7 @@ def like(post_id):
         return redirect(url_for('auth.login'))
     
     existing_vote = PostVote.query.filter_by(user_id=user_id, post_id=post.id).first()
+
 
     if existing_vote:
         if existing_vote.vote == "like":
@@ -143,6 +152,16 @@ def uploadpfp():
 @main.route('/post/<int:post_id>')
 def viewpost(post_id):
     post = Post.query.get_or_404(post_id)
+
+    if 'user_id' in session and post.user_id == session['user_id']:
+        post_view = PostView.query.filter_by(user_id=session['user_id'], post_id=post_id).first()
+        if not post_view:
+            post_view = PostView(user_id=session['user_id'], post_id=post_id, last_viewed=datetime.utcnow())
+            db.session.add(post_view)
+        else:
+            post_view.last_viewed = datetime.utcnow()
+        db.session.commit()
+
     return render_template('viewpost.html', post=post)
 
 @main.route('/comment/<int:post_id>', methods=['POST'])
@@ -150,6 +169,7 @@ def comment(post_id):
     user_id = session.get('user_id')
     if not user_id:
         return redirect(url_for('auth.login'))
+    
     
     content = request.form['content']
     if content.strip():
@@ -161,7 +181,7 @@ def comment(post_id):
 @main.route('/admin')
 def adminpanel():
     if session.get('username') != "admin":
-        return "Access Denied", 403
+        abort(403)
     users = User.query.filter(User.username != "admin").all()
 
     theme_folder = os.path.join(current_app.static_folder, 'themes')
@@ -178,7 +198,7 @@ def adminpanel():
 @main.route('/ban/<int:user_id>', methods=['POST'])
 def banuser(user_id):
     if session.get('username') != "admin":
-        return "Access Denied", 403
+        abort(403)
     
     user = User.query.get_or_404(user_id)
     user.is_banned = True
@@ -188,7 +208,7 @@ def banuser(user_id):
 @main.route('/settheme', methods=['POST'])
 def settheme():
     if session.get('username') != "admin":
-        return "Access denied", 403
+        abort(403)
     
     theme = request.form['theme']
     SiteConfig.set('theme', theme)
@@ -205,3 +225,11 @@ def search():
         posts = Post.query.filter(Post.content.ilike(f'%{query}%')).all()
 
     return render_template('search.html', query=query, users=users, posts=posts)
+
+@main.route('/trigger-404')
+def trigger_404():
+    abort(404)
+
+@main.route('/trigger-500')
+def trigger_500():
+    abort(500)

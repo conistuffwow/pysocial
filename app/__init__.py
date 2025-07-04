@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask import redirect, url_for
 from flask_login import LoginManager, current_user
@@ -28,6 +28,18 @@ def create_app():
         from .models import SiteConfig
         theme = SiteConfig.get('theme', 'themes/base.css')
         return {'config_theme': theme}
+    
+    @app.errorhandler(404)
+    def notfound(error):
+        return render_template('errors/404.html'), 404
+    
+    @app.errorhandler(403)
+    def forbiddn(error):
+        return render_template('errors/403.html'), 403
+    
+    @app.errorhandler(500)
+    def internalerr(error):
+        return render_template('errors/500.html'), 500
 
     with app.app_context():
         db.create_all()

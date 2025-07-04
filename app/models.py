@@ -37,7 +37,7 @@ class PostVote(db.Model):
 class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     content = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
@@ -63,5 +63,12 @@ class SiteConfig(db.Model):
             setting = SiteConfig(key=key, value=value)
             db.session.add(setting)
         db.session.commit()
+
+class PostView(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    last_viewed = db.Column(db.DateTime, default=datetime.utcnow)
+
 
     
